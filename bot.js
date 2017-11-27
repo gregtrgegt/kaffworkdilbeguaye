@@ -265,4 +265,4 @@ muteMember.removeRole(mutedRole).then(member => {
 
 
 
-client.login("Mzg0NDEwMTE3ODg3NDkyMTA2.DPyxUQ.SZ2EBE0ynuK1rD1qyFTJgmv65g0")
+client.login(process.env.TOKEN)
