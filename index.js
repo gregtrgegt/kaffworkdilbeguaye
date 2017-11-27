@@ -1,7 +1,6 @@
 const Discord = require("discord.js");
 const client = new Discord.Client()
 const bot = new Discord.Client()
-const randomWordFR = require('random-word-fr');
 
 var prefix = "!";
 
