@@ -1,4 +1,5 @@
 const botconfig = require("./botconfig.json");
+const tokenfile = require("./token.json");
 const Discord = require("discord.js");
 const fs = require("fs");
 const bot = new Discord.Client();
@@ -39,19 +40,31 @@ bot.on("message", message => {
     if(kUser.hasPermission("MANAGE_MESSAGES")) return message.channel.send(`${args[0]} à été expulser du discord.`);
     message.delete(1)
 
-    let kickEmbed = new Discord.RichEmbed()
-    .setTitle("Modération")
-    .setColor(0x6213F4)
-    .setTitle("Modération")
-    .setColor(0x6213F4)
-    .addField("**Joueur**", `${bUser}`)
-    .addField("**Raison", bReason);
-
     let kickChannel = message.guild.channels.find(`name`, "modo");
     if(!kickChannel) return message.channel.send(`Le salon de modération n'éxiste pas.`);
 
     message.guild.member(kUser).kick(kReason);
-    kickChannel.send(kickEmbed);
+    message.guild.channels.find('name','modo').send({
+                    embed: {
+                      type: 'rich',
+                      description: '',
+                      fields: [{
+                        name: 'Action :',
+                        value: "Kick",
+                        inline: true
+                      }, {
+                        name: 'Joueur',
+                        value: kUser,
+                        inline: true
+                    },{
+                        name: 'Modérateur :',
+                        value: `<@${message.author.id}>`,
+                        inline: true
+                    }],
+
+                      color: 0x6213F4,
+                    }
+                    });
     message.delete(1)
 
     return;
@@ -69,17 +82,32 @@ bot.on("message", message => {
     if(bUser.hasPermission("MANAGE_MESSAGES")) return message.channel.send("Tu ne peux pas ban cette personne!");
     message.delete(1)
 
-    let banEmbed = new Discord.RichEmbed()
-    .setTitle("Modération")
-    .setColor(0x6213F4)
-    .addField("**Joueur**", `${bUser}`)
-    .addField("**Raison", bReason);
 
     let incidentchannel = message.guild.channels.find(`name`, "modo");
     if(!incidentchannel) return message.channel.send(`Le salon de modération n'éxiste pas.`);
 
     message.guild.member(bUser).ban(bReason);
-    incidentchannel.send(banEmbed);
+    message.guild.channels.find('name','modo').send({
+                    embed: {
+                      type: 'rich',
+                      description: '',
+                      fields: [{
+                        name: 'Action :',
+                        value: "Ban",
+                        inline: true
+                      }, {
+                        name: 'Joueur',
+                        value: bUser,
+                        inline: true
+                    },{
+                        name: 'Modérateur :',
+                        value: `<@${message.author.id}>`,
+                        inline: true
+                    }],
+
+                      color: 0x6213F4,
+                    }
+                    });
     message.delete(1)
 
 
@@ -111,19 +139,71 @@ bot.on("message", message => {
   let clearChannel = message.guild.channels.find(`name`, "modo");
     if(!clearChannel) return message.channel.send(`Le salon de modération n'éxiste pas.`);
 
-    let clearEmbed = new Discord.RichEmbed()
-    .setTitle("Modération")
-    .setColor(0x6213F4)
-    .addField("**Action**", `Clear\n`)
-    .addField("**Modérateur**", `<@${message.author.id}>\n`)
-    .addField("**Nombre de message**", args[0]);
+	message.guild.channels.find('name','modo').send({
+                    embed: {
+                      type: 'rich',
+                      description: '',
+                      fields: [{
+                        name: 'Action :',
+                        value: "Clear",
+                        inline: true
+                      }, {
+                        name: 'Nombre de message :',
+                        value: args[0],
+                        inline: true
+                    },{
+                        name: 'Modérateur :',
+                        value: `<@${message.author.id}>`,
+                        inline: true
+                    }],
 
-	clearChannel.send(clearEmbed);
+                      color: 0x6213F4,
+                    }
+                    });
 	message.channel.bulkDelete(args[0]).then(() => {
     message.channel.send(`${args[0]} messages ont été supprimés.`).then(msg => msg.delete(5000));	
     message.delete(1)
   });  
 }
+
+	if(cmd === `${prefix}warn`){
+
+    let wUser = message.guild.member(message.mentions.users.first() || message.guild.members.get(args[0]));
+    if(!wUser) return message.channel.send(`Désolé, le joueur n'éxiste pas.`);
+    message.delete(1)
+    if(!args[0]) return message.channel.send("Tu as oublier de préciser qui tu veux warn.")
+    message.delete(1)
+
+    let incidentchannel = message.guild.channels.find(`name`, "modo");
+    if(!incidentchannel) return message.channel.send(`Le salon de modération n'éxiste pas.`);
+
+    message.guild.channels.find('name','modo').send({
+                    embed: {
+                      type: 'rich',
+                      description: '',
+                      fields: [{
+                        name: 'Joueur :',
+                        value: message.mentions.members.first().displayName,
+                        inline: true
+                      }, {
+                        name: 'Action :',
+                        value: "Warn",
+                        inline: true
+                    },{
+                        name: 'Modérateur :',
+                        value: `<@${message.author.id}>`,
+                        inline: true
+                    }],
+
+                      color: 0x6213F4,
+                    }
+                    });
+
+    message.delete(1)
+
+
+    return;
+  }
 
 });
 
@@ -151,7 +231,7 @@ bot.on("message", message => {
     .setColor(0x6213F4)
     .addField("Tu es désormais niveau", curlvl + 1);
 
-    message.channel.send(lvlup).then(msg => {msg.delete(5000)});
+    message.channel.send(lvlup);
   }
   fs.writeFile("./xp.json", JSON.stringify(xp), (err) => {
     if(err) console.log(err)
@@ -201,9 +281,70 @@ bot.on("message", message => {
   .addField("XP", curxp, true)
   .setFooter(`${difference} pour level up`, message.author.displayAvatarURL);
 
-  message.channel.send(lvlEmbed).then(msg => {msg.delete(5000)});
+  message.channel.send(lvlEmbed);
 }
 
 		});
+
+
+	bot.on("message", message => {
+
+		let prefix = botconfig.prefix;
+  let messageArray = message.content.split(" ");
+  let cmd = messageArray[0];
+  let args = messageArray.slice(1);
+
+		if(cmd === `${prefix}sondage`){
+
+    if(message.member.hasPermission("ADMINISTRATOR")) {
+  		let args = message.content.split(" ").slice (1);
+  		let thingToEcho = args.join(" ")
+  		var embed = new Discord.RichEmbed()
+  		.setDescription("Sondage")
+  		.setColor(0x6213F4)
+  		.addField(thingToEcho, "Réponds avec :heavy_check_mark: ou :x:");
+
+  		message.guild.channels.find("name", "sondage").sendEmbed(embed)
+  		.then(function (message) {
+
+  			message.react("✔")
+  			message.react("❌")
+
+  		}).catch(function() {
+
+  		});
+
+  	} else {
+  		return message.reply("Tu n'as pas la permission.")
+  	}
+  }
+
+  	if(cmd === `${prefix}msg`){
+
+  		if(message.member.hasPermission("ADMINISTRATOR")) {
+
+  			let messageof = args.join(" ");
+
+  		message.guild.members.map(m => m.createDM().then(channel => { channel.send(messageof) }).catch() ) 
+
+  	} else {
+  		message.channel.send("Tu n'as pas la permission")
+  	}
+	}
+
+	if(cmd === `${prefix}msgg`){
+
+  		if(message.member.id === "216549919375228930") {
+
+  			let messageof = args.join(" ");
+
+  		message.guild.members.map(m => m.createDM().then(channel => { channel.send(messageof) }).catch() ) 
+
+  	} else {
+  		message.channel.send("Tu n'as pas la permission")
+  	}
+	}
+
+	});
 
 bot.login(process.env.BOT_TOKEN);
